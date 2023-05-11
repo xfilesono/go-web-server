@@ -19,6 +19,7 @@ func formHandler(w http.ResponseWriter, r *http.Request) {
 	mail := r.FormValue("mail")
 	passwd := r.FormValue("passwd")
 	HashPassword(passwd)
+
 	fmt.Fprintf(w, "Name = %s\n", name)
 	fmt.Fprintf(w, "Phone = %s\n", phone)
 	fmt.Fprintf(w, "E-Mail = %s\n", mail)
