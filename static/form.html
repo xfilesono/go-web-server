@@ -5,9 +5,10 @@
     </head>
     <body>
         <div>
-            <form method=""POST" action="/form">
-                <label>Name</label><input name="name" type="text" value=""/>
-                <label>Address</label><input name="address" type="text" value=""/>
+            <form method="POST" action="/form">
+                <label>Full Name: </label><input name="name" type="text" value="" placeholder="Mahmut Tuncer" required="required"/><br>
+                <label>Phone: </label><input name="phone" type="text" value="" placeholder="0044-751-4456036" pattern="[0-9]{4}-[0-9]{3}-[0-9]{7}"/><br>
+                <label>E-Mail: </label><input name="mail" type="text" value="" placeholder="mahmut.tuncer@gmail.com" pattern="[^@\s]+@[^@\s]+\.[^@\s]+" required="required"/>
 
                 <input type="submit" value="submit">
             </form>
