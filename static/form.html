@@ -2,16 +2,90 @@
 <html>
     <head>
         <meta charset=""UTF-8"/>
+        <style>
+            input[type=text], select {
+              width: ;
+              padding: 12px 20px;
+              margin: 8px 0;
+              display: inline-block;
+              border: 1px solid #ccc;
+              border-radius: 4px;
+              box-sizing: border-box;
+            }
+
+            input[type=tel], select {
+              width: ;
+              padding: 12px 20px;
+              margin: 8px 0;
+              display: inline-block;
+              border: 1px solid #ccc;
+              border-radius: 4px;
+              box-sizing: border-box;
+            }
+
+            input[type=password], select {
+              width: ;
+              padding: 12px 20px;
+              margin: 8px 0;
+              display: inline-block;
+              border: 1px solid #ccc;
+              border-radius: 4px;
+              box-sizing: border-box;
+            }
+
+            input[type=mail], select {
+              width: ;
+              padding: 12px 20px;
+              margin: 8px 0;
+              display: inline-block;
+              border: 1px solid #ccc;
+              border-radius: 4px;
+              box-sizing: border-box;
+            }
+            
+            input[type=submit] {
+              width: ;
+              background-color: #4CAF50;
+              color: white;
+              padding: 14px 20px;
+              margin: 8px 0;
+              border: none;
+              border-radius: 4px;
+              cursor: pointer;
+            }
+            
+            input[type=submit]:hover {
+              background-color: #45a049;
+            }
+            
+            div {
+              border-radius: 10px;
+              background-color: #e6e6e6;
+              padding: 20px 20px;
+              width: 400px;
+            }
+            input:required:invalid, input:focus:invalid {
+                border-color:red;
+                border-width: 1px;
+                
+            }
+            input:required:valid {
+                border-color:rgb(1, 159, 20);
+                border-width: 1px;
+            }
+        </style>
+        
     </head>
-    <body>
-        <div><center>
+    <body><center>
+        <div>
             <form method="POST" action="/form">
-                <label>Full Name : </label><input name="name" type="text" value="" placeholder="Mahmut Tuncer" required="required"/><br>
-                <label>Phone : </label><input name="phone" type="tel" value="" placeholder="0044-751-4456036" pattern="[0]{2}[0-9]{2}[0-9]{10}"/><br>
-                <label>E-Mail : </label><input name="mail" type="mail" value="" placeholder="mahmut.tuncer@gmail.com" pattern="[^@\s]+@[^@\s]+\.[^@\s]+" required="required"/><br>
-                <label>Password : </label><input name="passwd" type="password" value="" placeholder="Can Use: A-Z a-z 0-9 !.-*" pattern="[A-Za-z0-9!.-*]{8,12}" required="required" />
+                <label>Full Name*<br></label><input name="name" type="text" value="" placeholder="Mahmut Tuncer" required="required"/><br>
+                <label>Phone<br></label><input name="phone" type="tel" value="" placeholder="0044-751-4456036" pattern="[0]{2}[0-9]{2}[0-9]{10}"/><br>
+                <label>E-Mail*<br></label><input name="mail" type="mail" value="" placeholder="mahmut.tuncer@gmail.com" pattern="[^@\s]+@[^@\s]+\.[^@\s]+" required="required"/><br>
+                <label>Password*<br></label><input name="passwd" type="password" value="" placeholder="Can Use: A-Z a-z 0-9 !.-*" pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*_=+-]).{8,16}$" required="required" /><br>
                 <input type="submit" value="submit">
             </form>
+            <p style="color:red;">* (Required)</p>
         </div></center>
     </body>
 </html>
