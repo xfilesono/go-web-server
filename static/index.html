@@ -1,11 +1,44 @@
 <html>
     <head>
-        <title>Welcome to Our Databases</title>
+        <title>Welcome to CapsCode's Movie Database</title>
+        <style>            
+            a {
+              background-color: #4CAF50;
+              color: white;
+              padding: 14px 20px;
+              margin: 8px 0;
+              border: none;
+              border-radius: 4px;
+              cursor: pointer;
+              text-decoration: none;
+            }
+            
+            a:hover {
+              background-color: #096e0e;
+            }
+            
+            div {
+              border-radius: 10px;
+              background-color: #e6e6e6;
+              padding: 20px 20px;
+              width: 400px;
+            }
+            input:required:invalid, input:focus:invalid {
+                border-color:red;
+                border-width: 1px;
+                
+            }
+            input:required:valid {
+                border-color:rgb(1, 159, 20);
+                border-width: 1px;
+            }
+        </style>
     </head>
     <body>
-        <h2>You need to sign-up First</h2>
-        <div>
+        <div><center>
+            You need to sign-up First<br><br>
             <a href="./form.html">Sign-Up</a>
+            <a href="./movies.html">Look at our Database</a></center>
         </div>
     </body>
 </html>

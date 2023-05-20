@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title> Movies Database </title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+</head>
+ 
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <button class="btn btn-primary" id="veri-oku">Get Movies</button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>#ID</th>
+                      <th>Year</th>
+                      <th>Film Adı</th>
+                      <th>Yönetmen Ad</th>
+                      <th>Yönetmen Soyad</th>
+                    </tr>
+                  </thead>
+                  <tbody id="liste">
+                    <tr>
+                      <th scope="row">1</th>
+                      <td>0000</td>
+                      <td>----</td>
+                      <td>----</td>
+                      <td>----</td>
+                    </tr>
+                  </tbody>
+                </table>
+            </div>
+        </div>
+        
+    </div>
+    
+    <script>   
+       const btnCek=document.querySelector("#veri-oku");
+       const tbListe=document.querySelector("#liste");
+        btnCek.addEventListener("click",function(){
+            fetch('./movies') 
+                .then(cevap => cevap.json()) 
+                .then(veri => {
+                
+                    tbListe.innerHTML="";//tabloyu boşalt
+                
+                    veri.forEach(function(element,index){
+                        const satir = document.createElement("tr");
+                        const hucre1 = document.createElement("td");
+                        const hucre2 = document.createElement("td");
+                        const hucre3 = document.createElement("td");
+                        const hucre4 = document.createElement("td");
+                        const hucre5 = document.createElement("td");
+                        
+                        
+                        hucre1.textContent=element.id
+                        hucre2.textContent=element.year
+                        hucre3.textContent=element.title
+                        hucre4.textContent=element.director.firstname
+                        hucre5.textContent=element.director.lastname
+                        
+                        satir.appendChild(hucre1)
+                        satir.appendChild(hucre2)
+                        satir.appendChild(hucre3)
+                        satir.appendChild(hucre4)
+                        satir.appendChild(hucre5)
+                        
+                        tbListe.appendChild(satir)
+                    });
+                    
+                });
+        });
+    </script>
+    
+</body>
+</html>
