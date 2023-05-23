@@ -6,6 +6,14 @@
 <meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<title> Movies Database </title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <style>
+        a:link, a:visited {
+            color: white;
+            cursor: pointer;
+            text-decoration: none;
+            
+        }
+    </style>
 </head>
  
 <body>
@@ -13,6 +21,8 @@
         <div class="row">
             <div class="col">
                 <button class="btn btn-primary" id="veri-oku">Get Movies</button>
+                <button class="btn btn-primary" id="add"><a href="addmovie.html">Add Movie</a></button>
+                <button class="btn btn-primary" id="home"><a href="/">Home</a></button>
             </div>
         </div>
         <div class="row">
@@ -22,15 +32,19 @@
                     <tr>
                       <th>#ID</th>
                       <th>Year</th>
-                      <th>Film Adı</th>
-                      <th>Yönetmen Ad</th>
-                      <th>Yönetmen Soyad</th>
+                      <th>Country</th>
+                      <th>Movie's Name</th>
+                      <th>Genre/Category</th>
+                      <th>Cast</th>
+                      <th>Director/s</th>
                     </tr>
                   </thead>
                   <tbody id="liste">
                     <tr>
                       <th scope="row">1</th>
                       <td>0000</td>
+                      <td>----</td>
+                      <td>----</td>
                       <td>----</td>
                       <td>----</td>
                       <td>----</td>
@@ -50,7 +64,7 @@
                 .then(cevap => cevap.json()) 
                 .then(veri => {
                 
-                    tbListe.innerHTML="";//tabloyu boşalt
+                    tbListe.innerHTML="";//emptied the table
                 
                     veri.forEach(function(element,index){
                         const satir = document.createElement("tr");
@@ -59,19 +73,25 @@
                         const hucre3 = document.createElement("td");
                         const hucre4 = document.createElement("td");
                         const hucre5 = document.createElement("td");
+                        const hucre6 = document.createElement("td");
+                        const hucre7 = document.createElement("td");
                         
                         
                         hucre1.textContent=element.id
                         hucre2.textContent=element.year
-                        hucre3.textContent=element.title
-                        hucre4.textContent=element.director.firstname
-                        hucre5.textContent=element.director.lastname
+                        hucre3.textContent=element.country
+                        hucre4.textContent=element.title
+                        hucre5.textContent=element.genre
+                        hucre6.textContent=element.cast
+                        hucre7.textContent=element.director.directors
                         
                         satir.appendChild(hucre1)
                         satir.appendChild(hucre2)
                         satir.appendChild(hucre3)
                         satir.appendChild(hucre4)
                         satir.appendChild(hucre5)
+                        satir.appendChild(hucre6)
+                        satir.appendChild(hucre7)
                         
                         tbListe.appendChild(satir)
                     });

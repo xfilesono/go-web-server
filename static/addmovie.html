@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta http-equiv="X-UA-Compatible" content="ie=edge">
+      <title> Movies Database </title>
+        <style>
+            input[type=text], select {
+              padding: 12px 20px;
+              margin: 8px 0;
+              display: inline-block;
+              border: 1px solid #ccc;
+              border-radius: 4px;
+              box-sizing: border-box;
+            }
+
+            input[type=tel], select {
+              padding: 12px 20px;
+              margin: 8px 0;
+              display: inline-block;
+              border: 1px solid #ccc;
+              border-radius: 4px;
+              box-sizing: border-box;
+            }
+
+            input[type=password], select {
+              padding: 12px 20px;
+              margin: 8px 0;
+              display: inline-block;
+              border: 1px solid #ccc;
+              border-radius: 4px;
+              box-sizing: border-box;
+            }
+
+            input[type=mail], select {
+              padding: 12px 20px;
+              margin: 8px 0;
+              display: inline-block;
+              border: 1px solid #ccc;
+              border-radius: 4px;
+              box-sizing: border-box;
+            }
+            
+            input[type=submit] {
+              background-color: #4CAF50;
+              color: white;
+              padding: 14px 20px;
+              margin: 8px 0;
+              border: none;
+              border-radius: 4px;
+              cursor: pointer;
+            }
+            
+            input[type=submit]:hover {
+              background-color: #9f0e0e;
+            }
+            
+            div {
+              border-radius: 10px;
+              background-color: #e6e6e6;
+              padding: 20px 20px;
+              width: 400px;
+            }
+
+            input:required:invalid, input:focus:invalid {
+                border-color:red;
+                border-width: 1px;
+                
+            }
+            
+            input:required:valid {
+                border-color:rgb(1, 159, 20);
+                border-width: 1px;
+            }
+            a:link, a:visited {
+              background-color: #4CAF50;
+              color: white;
+              padding: 14px 20px;
+              margin: 8px 0;
+              border: none;
+              border-radius: 4px;
+              text-align: center;
+              text-decoration: none;
+              display: inline-block;
+              cursor: pointer;
+              width: 90px;
+            }
+
+            a:hover, a:active {
+              background-color: #1a68c2;
+            }
+        </style>
+        
+    </head>
+    <body><center>
+        <div>
+            <form method="POST" action="/addmovie">
+                <label>Movie's Title<br></label><input name="title" type="text" value="" placeholder="Eternal Sunshine of the Spotless Mind" required="required"/><br>
+                <label>Released Year<br></label><input name="year" type="text" value="" placeholder="2006" pattern="[1-2]{1}[0-9]{3}" required="required"/><br>
+                <label>Country<br></label><input name="country" type="text" value="" placeholder="UK" required="required"/><br>
+                <label>Genre/Category<br></label><input name="genre" type="text" value="" placeholder="Science-Fiction" required="required"/><br>
+                <label>Cast<br></label><input name="cast" type="text" value="" placeholder="Tom Cruise, Val Kilmer, ..." required="required"/><br>
+                <label>Director/s<br></label><input name="directors" type="text" value="" placeholder="Stanley Kubrick" required="required"/><br>
+                <a style="float: left;" href="/"><-Home</a>
+                <input type="submit" value="Add Movie">
+                <a style="float: right;" href="movies.html">Get Movies-></a>
+            </form>
+            <p style="color:red;">* (Required)</p>
+        </div></center>
+    </body>
+</html>
