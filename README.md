@@ -16,7 +16,7 @@ This web server planned to contain movie's informations such as name, director, 
 1. ~~Database will add soon~~
 2. A user will be able to log-in
 3. ~~It will be a Movie Library which is a user can sign-in and see what's inside this library~~
-4. Movie's basic information will add to the database (some did)
-5. A user who has admin access can add, change or delete a movie
+4. ~~Movie's basic information will add to the database~~
+5.~~ A user who has admin access can add, change or delete a movie~~
 6. A user who has normal access (reader) can't add movie, he/she can only see movies
 7. Better visual website is going to build after the project finished
