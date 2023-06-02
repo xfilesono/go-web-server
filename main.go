@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"go-web-server/config"
 	"go-web-server/models"
 	"log"
-	"math/rand"
 	"net/http"
 	"strconv"
 	"time"
@@ -14,7 +14,6 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // gathering information from form.html for sign-up
@@ -23,66 +22,68 @@ func formHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
 		return
 	}
-	fmt.Fprintf(w, "Registration Successful..\n")
-	name := r.FormValue("name")
-	phone := r.FormValue("phone")
-	mail := r.FormValue("mail")
-	passwd := r.FormValue("passwd")
-	HashPassword(passwd)
 
-	fmt.Fprintf(w, "Name = %s\n", name)
-	fmt.Fprintf(w, "Phone = %s\n", phone)
-	fmt.Fprintf(w, "E-Mail = %s\n", mail)
-	fmt.Fprintf(w, "Password = %s\n", "**********")
+	user.FullName = r.FormValue("name")
+	user.Phone = r.FormValue("phone")
+	user.Mail = r.FormValue("mail")
+	user.Passwd, _ = config.HashPassword(r.FormValue("passwd"))
+	date := time.Now()
+
+	if user.FullName != "" {
+		res, err := db.Exec(`INSERT INTO users (fullname, phone, created_at, mail, passwd) VALUES (?,?,?,?,?)`, user.FullName, user.Phone, date, user.Mail, user.Passwd)
+		dbCheckErr(err)
+		addedId, err := res.LastInsertId()
+		if err != nil {
+			log.Fatalln(err)
+		}
+		user.ID = strconv.Itoa(int(addedId))
+
+		// add this user's info's to getUser slice for form.html check
+		getUser := append(getUser, models.User{ID: user.ID, FullName: user.FullName, Phone: user.Phone, Mail: user.Mail, Passwd: user.Passwd})
+
+		//Terminal Check
+		fmt.Println(getUser)
+	}
+
+	// redirect to form.html
+	// http.Redirect(w, r, "/form.html?"+usersInfo, http.StatusSeeOther)
+	http.Redirect(w, r, "/form.html", http.StatusSeeOther)
 }
 
-// Encryption user's password by using golang.org/x/crypto
-func HashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
+func getSignUpUser(w http.ResponseWriter, r *http.Request) {
 
-func CheckPasswordHash(password, hash string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-	return err == nil
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(user)
+
 }
 
 // function where we get all movies from our database
 func getMovies(w http.ResponseWriter, r *http.Request) {
 
-	db, err := sql.Open("mysql", "xfilesono:62674819@(127.0.0.1:3306)/allmovies")
-	if err = db.Ping(); err != nil {
-		dbCheckErr(err)
-	}
-	defer db.Close()
-
-	var (
-		id        string
-		year      string
-		country   string
-		title     string
-		genre     string
-		cast      string
-		directors string
-	)
-	sorgu := "SELECT id, year, country, title, genre, cast, directors FROM movies WHERE id=?"
-	erro, _ := db.Query("SELECT id FROM movies")
+	var moviesCheck models.Mov
 	var i = 0
 
-	for erro.Next() {
+	dbQuery := "SELECT id, year, country, title, genre, cast, directors FROM movies WHERE id=?"
+	rows, err := db.Query("SELECT id FROM movies")
+	dbCheckErr(err)
+	defer rows.Close()
+
+	for rows.Next() {
 		i++
-		errs := db.QueryRow(sorgu, i).Scan(&id, &year, &country, &title, &genre, &cast, &directors)
-		dbCheckErr(errs)
-		// Terminal check
-		fmt.Println(id, year, country, title, genre, cast, directors)
-		movies = append(movies, models.Movies{ID: id, Year: year, Country: country, Title: title, Genre: genre, Cast: cast, Director: &models.Director{Directors: directors}})
+		if err := db.QueryRow(dbQuery, i).Scan(&moviesCheck.ID, &moviesCheck.Year, &moviesCheck.Country, &moviesCheck.Title, &moviesCheck.Genre, &moviesCheck.Cast, &moviesCheck.Director); err != nil {
+			dbCheckErr(err)
+		}
+		movies = append(movies, models.Mov{ID: moviesCheck.ID, Year: moviesCheck.Year, Country: moviesCheck.Country, Title: moviesCheck.Title, Genre: moviesCheck.Genre, Cast: moviesCheck.Cast, Director: moviesCheck.Director})
+	}
+	// Terminal print
+	for i := range movies {
+		fmt.Println(movies[i])
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(movies)
 
 	emptyMoviesVariable()
-
 }
 
 // This function is for prevent movies's variable's duplications since we are using mysql database
@@ -92,23 +93,21 @@ func emptyMoviesVariable() {
 	fmt.Println(movies)
 }
 
-// function where we can delete a movie permanently
-func deleteMovies(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	params := mux.Vars(r)
-	for index, item := range movies {
-		if item.ID == params["id"] {
-			movies = append(movies[:index], movies[index+1:]...)
-			break
-		}
-	}
-	json.NewEncoder(w).Encode(movies)
-}
-
 // function where we get a single movie's information
 func getMovie(w http.ResponseWriter, r *http.Request) {
+
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
+	// get spesific Movie by using ID from DB
+	var moviesCheck models.Mov
+	dbQuery := "SELECT id, year, country, title, genre, cast, directors FROM movies WHERE id=?"
+
+	if err := db.QueryRow(dbQuery, params["id"]).Scan(&moviesCheck.ID, &moviesCheck.Year, &moviesCheck.Country, &moviesCheck.Title, &moviesCheck.Genre, &moviesCheck.Cast, &moviesCheck.Director); err != nil {
+		dbCheckErr(err)
+	}
+	movies = append(movies, models.Mov{ID: moviesCheck.ID, Year: moviesCheck.Year, Country: moviesCheck.Country, Title: moviesCheck.Title, Genre: moviesCheck.Genre, Cast: moviesCheck.Cast, Director: moviesCheck.Director})
+	fmt.Println(movies)
+
 	for _, item := range movies {
 		if item.ID == params["id"] {
 			json.NewEncoder(w).Encode(item)
@@ -117,23 +116,32 @@ func getMovie(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Function where we can create a new line of a movie
+// Function where we can add a new a movie to DB
 func createMovie(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var movie models.Movies
-	_ = json.NewDecoder(r.Body).Decode(&movie)
-	movie.ID = strconv.Itoa(rand.Intn(10000))
+	var movie models.Mov
+	err := json.NewDecoder(r.Body).Decode(&movie)
+	if err != nil {
+		log.Fatalln(err)
+	}
 	movies = append(movies, movie)
 	json.NewEncoder(w).Encode(movie)
+
+	date := time.Now()
+	res, err := db.Exec(`INSERT INTO movies (year, country, title, created_at, genre, cast, directors) VALUES (?,?,?,?,?,?,?)`, movie.Year, movie.Country, movie.Title, date, movie.Genre, movie.Cast, movie.Director)
+	dbCheckErr(err)
+
+	addedId, err := res.LastInsertId()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	fmt.Fprintf(w, "Movie Added to the DB..\n")
+	fmt.Fprintf(w, "Movie's ID = %d\n", addedId)
 }
 
-// Function where we can add a movie to the mysql database
+// Function where we can add a movie to DB via using html form
 func formAddMovieToDB(w http.ResponseWriter, r *http.Request) {
-
-	db, err := sql.Open("mysql", "xfilesono:62674819@(127.0.0.1:3306)/allmovies")
-	if err = db.Ping(); err != nil {
-		dbCheckErr(err)
-	}
 
 	if err := r.ParseForm(); err != nil {
 		fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -151,7 +159,9 @@ func formAddMovieToDB(w http.ResponseWriter, r *http.Request) {
 	result, err := db.Exec(`INSERT INTO movies (year, country, title, created_at, genre, cast, directors) VALUES (?,?,?,?,?,?,?)`, year, country, title, date, genre, cast, directors)
 	dbCheckErr(err)
 	addedId, err := result.LastInsertId()
-	defer db.Close()
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	fmt.Fprintf(w, "Movie Added to the DB..\n")
 	fmt.Fprintf(w, "Movie's ID = %d\n", addedId)
@@ -163,34 +173,71 @@ func formAddMovieToDB(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Director's Name = %s\n", directors)
 }
 
+// function where we can delete a movie permanently
+func deleteMovies(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	params := mux.Vars(r)
+
+	for index, item := range movies {
+		if item.ID == params["id"] {
+			movies = append(movies[:index], movies[index+1:]...)
+			break
+		}
+	}
+
+	_, err := db.Exec(`DELETE FROM movies WHERE id=?`, params["id"])
+	dbCheckErr(err)
+	_, err = db.Exec(`ALTER TABLE movies DROP id`)
+	dbCheckErr(err)
+	_, err = db.Exec(`ALTER TABLE movies ADD id int not null auto_increment primary key first`)
+	dbCheckErr(err)
+
+	json.NewEncoder(w).Encode(movies)
+}
+
 // function where we can update a movie's information
 func updateMovie(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
+	getMovie(w, r)
+
+	var movie models.Mov
+
 	for index, item := range movies {
 		if item.ID == params["id"] {
 			movies = append(movies[:index], movies[index+1:]...)
-			var movie models.Movies
 			_ = json.NewDecoder(r.Body).Decode(&movie)
 			movie.ID = params["id"]
 			movies = append(movies, movie)
 			json.NewEncoder(w).Encode(movie)
 		}
 	}
+
+	date := time.Now()
+	fmt.Println(movie)
+	_, err := db.Exec(`UPDATE movies SET title = ?,year = ?,country = ?,genre = ?,cast = ?,directors = ?,updated_at = ? WHERE id=?`, movie.Title, movie.Year, movie.Country, movie.Genre, movie.Cast, movie.Director, date, params["id"])
+	dbCheckErr(err)
+	emptyMoviesVariable()
 }
 
 // Database error check
 func dbCheckErr(err error) {
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 }
 
-var movies []models.Movies
+var (
+	movies  []models.Mov
+	db      *sql.DB
+	getUser []models.User
+	user    models.User
+)
 
 func main() {
 
-	//movies = append(movies, models.Movies{ID: id, Country: country, Year: year, Genre: genre, Cast: cast, Title: title, Director: &models.Director{Directors: directors}})
+	config.Connect()
+	db = config.GetDB()
 
 	r := mux.NewRouter()
 
@@ -198,11 +245,14 @@ func main() {
 
 	r.HandleFunc("/movies", getMovies).Methods("GET")
 	r.HandleFunc("/movies/{id}", getMovie).Methods("GET")
+	r.HandleFunc("/users", getSignUpUser).Methods("GET")
 	r.HandleFunc("/movies", createMovie).Methods("POST")
 	r.HandleFunc("/movies/{id}", updateMovie).Methods("PUT")
 	r.HandleFunc("/movies/{id}", deleteMovies).Methods("DELETE")
 	r.HandleFunc("/form", formHandler)
 	r.HandleFunc("/addmovie", formAddMovieToDB)
+	r.Handle("/custom.js", fileServer)
+	r.Handle("/custom2.js", fileServer)
 	r.Handle("/form.html", fileServer)
 	r.Handle("/", fileServer)
 	r.Handle("/movies.html", fileServer)
