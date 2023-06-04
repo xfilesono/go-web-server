@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -14,29 +15,33 @@ var (
 	db *sql.DB
 )
 
-func Connect() {
+func Connect() (*sql.DB, error) {
 
 	passDB := envVariable("LOCALHOST_DB_PASSWD")
-	userDB := envVariable("LOCALHOST_DB_USER")
+	userDB := envVariable("LOCALHOST_DB_USER") + ":"
 	nameDB := envVariable("LOCALHOST_DB_NAME")
+	server := "@(127.0.0.1:3306)/"
 
-	conn := userDB + ":" + passDB + "@(127.0.0.1:3306)/" + nameDB
+	conn := userDB + passDB + server + nameDB
 
 	var err error
 	db, err = sql.Open("mysql", conn)
 	if err = db.Ping(); err != nil {
 		dbCheckErr(err)
+	} else {
+		fmt.Println("Database Connected")
 	}
+
+	return db, err
 }
 
-func GetDB() *sql.DB {
-	fmt.Println("Database Connected")
-	return db
+func GetDB() (*sql.DB, error) {
+	return Connect()
 }
 
 func dbCheckErr(err error) {
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(http.StatusUnauthorized)
 	}
 }
 
