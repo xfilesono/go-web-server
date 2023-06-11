@@ -31,7 +31,7 @@ func TestCreateMovie(t *testing.T) {
 	requestBody.Title = "Top Gun: Maverick"
 	requestBody.Director = "Joseph Kosinski"
 	requestBody.Genre = "Action, Drama"
-	requestBody.ID = "1"
+	requestBody.ID = "199"
 	requestBody.Year = "2022"
 
 	f, err := json.Marshal(requestBody)
@@ -61,7 +61,7 @@ func TestCreateMovie(t *testing.T) {
 	if string(body) != strconv.Itoa(http.StatusCreated) {
 		t.Errorf("Unexpected body returned. Want %q, got %q", strconv.Itoa(http.StatusCreated), string(body))
 	} else {
-		fmt.Sprintf("Test passed. want: %s , got %s", strconv.Itoa(http.StatusCreated), string(body))
+		fmt.Printf("Test passed. want: %s , got %s\n", strconv.Itoa(http.StatusCreated), string(body))
 	}
 
 }
