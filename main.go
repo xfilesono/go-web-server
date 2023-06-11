@@ -125,7 +125,7 @@ func createMovie(w http.ResponseWriter, r *http.Request) {
 		id := int(addedId)
 		movie.ID = strconv.Itoa(id)
 
-		// this two lines has to comment for testing - check later
+		// this two lines has to change to a comment for testing - "check later"
 		json.NewEncoder(w).Encode(movie)
 		fmt.Fprintf(w, "Movie Added to the DB..\n")
 
