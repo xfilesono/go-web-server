@@ -85,7 +85,6 @@ func getMovie(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var (
 		moviesCheck models.Mov
-		movies      []models.Mov
 	)
 
 	dbQuery, err := db.Query(`SELECT id, year, country, title, genre, cast, directors FROM movies where id=?`, params["id"])
@@ -94,9 +93,9 @@ func getMovie(w http.ResponseWriter, r *http.Request) {
 	if dbQuery.Next() {
 		err := dbQuery.Scan(&moviesCheck.ID, &moviesCheck.Year, &moviesCheck.Country, &moviesCheck.Title, &moviesCheck.Genre, &moviesCheck.Cast, &moviesCheck.Director)
 		dbCheckErr(err)
-		movies = append(movies, moviesCheck)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(movies)
+		json.NewEncoder(w).Encode(moviesCheck)
+		fmt.Fprintf(w, strconv.Itoa(http.StatusOK))
 	} else {
 		fmt.Fprintf(w, strconv.Itoa(http.StatusNoContent))
 	}
@@ -105,33 +104,37 @@ func getMovie(w http.ResponseWriter, r *http.Request) {
 
 // Function where we can add a new a movie to DB
 func createMovie(w http.ResponseWriter, r *http.Request) {
-
 	var (
-		movie  models.Mov
-		movies []models.Mov
+		movie models.Mov
 	)
-
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewDecoder(r.Body).Decode(&movie)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	date := time.Now()
-	res, err := db.Exec(`INSERT INTO movies (year, country, title, created_at, genre, cast, directors) VALUES (?,?,?,?,?,?,?)`, movie.Year, movie.Country, movie.Title, date, movie.Genre, movie.Cast, movie.Director)
-	dbCheckErr(err)
+	if movie.Title != "" {
+		date := time.Now()
+		res, err := db.Exec(`INSERT INTO movies (year, country, title, created_at, genre, cast, directors) VALUES (?,?,?,?,?,?,?)`, movie.Year, movie.Country, movie.Title, date, movie.Genre, movie.Cast, movie.Director)
+		dbCheckErr(err)
 
-	addedId, err := res.LastInsertId()
-	if err != nil {
-		log.Fatalln(err)
+		addedId, err := res.LastInsertId()
+		if err != nil {
+			log.Fatalln(err)
+		}
+		id := int(addedId)
+		movie.ID = strconv.Itoa(id)
+
+		// this two lines has to comment for testing - check later
+		json.NewEncoder(w).Encode(movie)
+		fmt.Fprintf(w, "Movie Added to the DB..\n")
+
+		fmt.Fprintf(w, strconv.Itoa(http.StatusCreated))
+		w.WriteHeader(http.StatusCreated)
+	} else {
+		fmt.Fprintf(w, strconv.Itoa(http.StatusNoContent))
+		w.WriteHeader(http.StatusNotFound)
 	}
-	id := int(addedId)
-	movie.ID = strconv.Itoa(id)
-
-	movies = append(movies, movie)
-	json.NewEncoder(w).Encode(movie)
-
-	fmt.Fprintf(w, "Movie Added to the DB..\n")
 }
 
 // Function where we can add a movie to DB via using html form (Merge this function with createMovie func later)
@@ -141,25 +144,29 @@ func formAddMovieToDB(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("ParseForm() err: ", err)
 		return
 	}
-
 	var (
 		movie  models.Mov
 		movies []models.Mov
 	)
 
-	movie.Year = r.FormValue("year")
-	movie.Country = r.FormValue("country")
-	movie.Title = r.FormValue("title")
-	date := time.Now()
-	movie.Genre = r.FormValue("genre")
-	movie.Cast = r.FormValue("cast")
-	movie.Director = r.FormValue("directors")
-	movies = append(movies, movie)
+	if r.FormValue("year") != "" {
+		movie.Year = r.FormValue("year")
+		movie.Country = r.FormValue("country")
+		movie.Title = r.FormValue("title")
+		date := time.Now()
+		movie.Genre = r.FormValue("genre")
+		movie.Cast = r.FormValue("cast")
+		movie.Director = r.FormValue("directors")
+		movies = append(movies, movie)
+		_, err := db.Exec(`INSERT INTO movies (year, country, title, created_at, genre, cast, directors) VALUES (?,?,?,?,?,?,?)`, movie.Year, movie.Country, movie.Title, date, movie.Genre, movie.Cast, movie.Director)
+		if err != nil {
+			dbCheckErr(err)
+		}
+		http.Redirect(w, r, "/addmovie.html", http.StatusOK)
+	} else {
+		fmt.Fprintf(w, strconv.Itoa(http.StatusNoContent))
+	}
 
-	_, err := db.Exec(`INSERT INTO movies (year, country, title, created_at, genre, cast, directors) VALUES (?,?,?,?,?,?,?)`, movie.Year, movie.Country, movie.Title, date, movie.Genre, movie.Cast, movie.Director)
-	dbCheckErr(err)
-
-	http.Redirect(w, r, "/addmovie.html", http.StatusSeeOther)
 }
 
 // function where we can delete a movie permanently
@@ -177,7 +184,7 @@ func deleteMovies(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "\nMovie which has an id `"+params["id"]+"` has been deleted\n")
 		fmt.Fprintf(w, strconv.Itoa(http.StatusOK))
 	} else {
-		fmt.Fprintf(w, strconv.Itoa(http.StatusNoContent))
+		fmt.Fprintf(w, strconv.Itoa(http.StatusNotFound))
 	}
 
 }
@@ -188,8 +195,7 @@ func updateMovie(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
 	var (
-		movie  models.Mov
-		movies []models.Mov
+		movie models.Mov
 	)
 
 	res, err := db.Query(`SELECT id from movies where id=?`, params["id"])
@@ -200,15 +206,14 @@ func updateMovie(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Fatalln(err)
 		}
-		movies = append(movies, movie)
 		json.NewEncoder(w).Encode(movie)
 
 		date := time.Now()
 		_, err = db.Exec(`UPDATE movies SET title = ?,year = ?,country = ?,genre = ?,cast = ?,directors = ?,updated_at = ? WHERE id=?`, movie.Title, movie.Year, movie.Country, movie.Genre, movie.Cast, movie.Director, date, params["id"])
 		dbCheckErr(err)
+		fmt.Fprintf(w, strconv.Itoa(http.StatusOK))
 	} else {
-		statusCode := http.StatusNoContent // 204
-		fmt.Fprintf(w, strconv.Itoa(statusCode))
+		fmt.Fprintf(w, strconv.Itoa(http.StatusNotFound))
 	}
 
 }
